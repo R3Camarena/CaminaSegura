@@ -6,14 +6,14 @@
 //
 
 import SwiftUI
-import CoreLocation
 
-// View for adding incidents to a selected danger zone
 struct AddIncidentView: View {
-    @ObservedObject var viewModel: MapViewModel  // Observes the shared data model
+    @ObservedObject var viewModel: MapViewModel
     @State private var selectedZoneId: UUID? = nil
-    @State private var numberOfNewIncidents = 1  // Default number of incidents to add
-    @Environment(\.dismiss) var dismiss  // For closing the view when done
+    @State private var showAlert = false  // State to control the alert display
+    @State private var alertTitle = ""  // Dynamic title for the alert
+    @State private var alertMessage = ""  // Dynamic message for the alert
+    @Environment(\.dismiss) var dismiss
     
     var body: some View {
         NavigationView {
@@ -27,47 +27,45 @@ struct AddIncidentView: View {
                     }
                     .pickerStyle(.menu)
                 }
-                
-                // Section for specifying the number of incidents
-                Section(header: Text("Número de incidentes en ésta zona")) {
-                    Stepper("\(numberOfNewIncidents)", value: $numberOfNewIncidents, in: 1...10)
-                }
             }
-            .navigationBarTitle("Agregar Incidente", displayMode: .inline)
-            .navigationBarItems(trailing: Button("Guardar") {
-                // Update the selected zone with the new incidents
+            .navigationBarTitle("Reportar Incidente", displayMode: .inline)
+            .navigationBarItems(trailing: Button("Reportar") {
                 if let zone = viewModel.zones.first(where: { $0.id == selectedZoneId }) {
-                    print("Guardando incidencia para la zona: \(zone.name)")
-                    print("Número de incidentes a agregar: \(numberOfNewIncidents)")
-                    viewModel.addIncident(to: zone, count: numberOfNewIncidents)  // Update incident count in selected zone
-                    dismiss()  // Close the view
+                    // Try to add a report and check if it was allowed
+                    let reportAdded = viewModel.addReport(to: zone)
+                    
+                    if reportAdded {
+                        alertTitle = "Incidente Agregado"
+                        alertMessage = "El incidente ha sido agregado exitosamente."
+                        showAlert = true
+                        // Close the sheet after a 1-second delay
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                            dismiss()
+                        }
+                    } else {
+                        alertTitle = "Reporte No Permitido"
+                        alertMessage = "Solo se puede reportar un incidente cada 5 minutos en la misma zona para prevenir falsos reportes."
+                        showAlert = true
+                    }
                 } else {
                     print("No se encontró la zona seleccionada para agregar el incidente")
                 }
             })
+            .alert(isPresented: $showAlert) {
+                Alert(
+                    title: Text(alertTitle),
+                    message: Text(alertMessage),
+                    dismissButton: .default(Text("Ok"))
+                )
+            }
         }
         .onAppear {
-            // Request user's location and set the closest zone as the initial selection
-            viewModel.requestUserLocation()
-            
-            // Set selectedZoneId to the nearest zone based on user's location
-            if let userLocation = viewModel.userLocation {
-                let userCLLocation = CLLocation(latitude: userLocation.latitude, longitude: userLocation.longitude)
-                if let nearestZone = viewModel.findNearestZone(to: userCLLocation) {
-                    selectedZoneId = nearestZone.id
-                } else {
-                    // Default to the first zone if no nearest zone is found
-                    selectedZoneId = viewModel.zones.first?.id
-                }
-            } else {
-                // Default to the first zone if user location is unavailable
-                selectedZoneId = viewModel.zones.first?.id
+            // Set initial selection to the nearest zone if available
+            if selectedZoneId == nil {
+                selectedZoneId = viewModel.selectedZone?.id
             }
-            
-            /**DEBUGGING**/
-            print("Zona seleccionada antes de guardar: \(String(describing: selectedZoneId))")
-            print("Número de incidentes a agregar: \(numberOfNewIncidents)")
         }
+        .presentationDetents([.medium]) // Define the sheet height as 30% of the screen height
     }
 }
 

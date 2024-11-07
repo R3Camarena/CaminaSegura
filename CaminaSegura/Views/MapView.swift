@@ -68,6 +68,7 @@ struct MapView: View {
             .padding(.bottom, 10)
             .sheet(isPresented: $showSheet) {
                 AddIncidentView(viewModel: viewModel) // For diaplying the view when tapping the add button
+                .presentationDetents([.medium])
             }
         }
     }

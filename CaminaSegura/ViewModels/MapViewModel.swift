@@ -115,13 +115,34 @@ class MapViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
     }
     
-    // Adds a specified number of incidents to a selected zone
-    func addIncident(to zone: DangerZone, count: Int) {
-        if let index = zones.firstIndex(where: { $0.id == zone.id }) {
-            zones[index].numberOfIncidents += count
-            objectWillChange.send() // Notify observers
-            zones = zones.map { $0 }
+    // Adds a report to a selected zone if 5 minutes have passed for the current user
+    func addReport(to zone: DangerZone) -> Bool {
+        let currentTime = Date()
+        let userDefaults = UserDefaults.standard
+        
+        // Check the last report date for this zone for the current user
+        if let lastReportDate = userDefaults.getLastReportDate(forZoneId: zone.id), currentTime.timeIntervalSince(lastReportDate) < 300 {
+            // Less than 5 minutes have passed for this user in this zone
+            return false
         }
+        
+        if let index = zones.firstIndex(where: { $0.id == zone.id }) {
+            zones[index].pendingReports += 1
+            userDefaults.setLastReportDate(forZoneId: zone.id, date: currentTime)  // Update the last report time for this user in this zone
+            
+            // Check if there are enough reports to confirm the incident
+            if zones[index].pendingReports >= 3 {
+                zones[index].numberOfIncidents += 1  // Increment official incident count
+                zones[index].pendingReports = 0  // Reset pending reports
+                print("Confirmed incident in \(zones[index].name): Total incidents \(zones[index].numberOfIncidents)")
+            } else {
+                print("Pending reports for \(zones[index].name): \(zones[index].pendingReports)")
+            }
+            
+            objectWillChange.send()  // Notify observers
+        }
+        
+        return true
     }
     
     // Finds the nearest zone to the user's location
