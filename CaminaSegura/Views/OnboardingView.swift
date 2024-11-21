@@ -28,7 +28,7 @@ struct OnboardingView: View {
                     Image(systemName: features[index].2)
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 100, height: 100)  // Adjust size as needed
+                        .frame(width: 100, height: 100)
                         .foregroundColor(.purple)
                         .padding(.bottom, 20)
                     

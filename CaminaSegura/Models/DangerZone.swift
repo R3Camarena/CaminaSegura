@@ -17,7 +17,7 @@ class DangerZone: Identifiable, ObservableObject, Equatable, Codable {
     @Published var numberOfIncidents: Int  // Official incident count
     @Published var pendingReports: Int = 0  // Pending user reports waiting to be confirmed
     
-    // Coordenadas como computed property
+    // Coordinates as a computed property
     var coordinates: CLLocationCoordinate2D {
         CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
     }
@@ -30,17 +30,17 @@ class DangerZone: Identifiable, ObservableObject, Equatable, Codable {
         self.numberOfIncidents = numberOfIncidents
     }
     
-    // Conformidad a Equatable para permitir la comparación de objetos DangerZone
+    // Equatable protocol requires this function to allow object compasrisons in DangerZone
     static func == (lhs: DangerZone, rhs: DangerZone) -> Bool {
         return lhs.id == rhs.id
     }
     
-    // Conformidad a Codable (Encodable & Decodable)
+    // Encodable & Decodable protocols require this enum
     enum CodingKeys: String, CodingKey {
         case id, name, latitude, longitude, numberOfIncidents, pendingReports
     }
     
-    // Método para codificar los datos
+    // Encoding and encrypting data
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(id, forKey: .id)
@@ -51,7 +51,7 @@ class DangerZone: Identifiable, ObservableObject, Equatable, Codable {
         try container.encode(pendingReports, forKey: .pendingReports)
     }
     
-    // Inicializador para decodificar los datos
+    // Decodifing and decrypting data
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         id = try container.decode(UUID.self, forKey: .id)

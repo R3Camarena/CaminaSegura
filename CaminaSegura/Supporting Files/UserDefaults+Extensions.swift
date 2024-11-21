@@ -8,12 +8,12 @@
 import Foundation
 
 extension UserDefaults {
-    // Guarda la fecha de último reporte para una zona específica
+    // Storing the date of the last report added in a specific zone
     func setLastReportDate(forZoneId zoneId: UUID, date: Date) {
         set(date, forKey: "lastReportDate_\(zoneId.uuidString)")
     }
     
-    // Recupera la fecha de último reporte para una zona específica
+    // Recovering the date of the last report added in a specific zone
     func getLastReportDate(forZoneId zoneId: UUID) -> Date? {
         return object(forKey: "lastReportDate_\(zoneId.uuidString)") as? Date
     }

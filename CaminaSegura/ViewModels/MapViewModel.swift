@@ -13,7 +13,7 @@ import SwiftUI
 // ViewModel managing the data and logic for map and incident tracking
 class MapViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
     @Published var region = MKCoordinateRegion(
-        center: CLLocationCoordinate2D(latitude: 19.432608, longitude: -99.133209), // CDMX as initial location
+        center: CLLocationCoordinate2D(latitude: 19.432608, longitude: -99.133209), // CDMX as initial location for simulator
         span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
     )
     

@@ -65,6 +65,7 @@ struct MainTabView: View {
     }
 }
 
+// This extension manages the state of the onboarding view to determine if it should be displayed or not
 extension UserDefaults {
     private enum Keys {
         static let onboardingCompleted = "onboardingCompleted"
